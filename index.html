@@ -647,9 +647,22 @@
                 sortedTxs.forEach(tx => {
                     const tr = document.createElement('tr');
                     tr.className = 'hover:bg-slate-50 transition-all';
+
+                    // Calculate percentage relative to the target amount of the goal
+                    const txPctRaw = (tx.amount / target) * 100;
+                    // Format percentage nicely, removing trailing .0 if integer, or showing up to 1 decimal place if floating.
+                    const txPct = txPctRaw % 1 === 0 ? txPctRaw.toFixed(0) : txPctRaw.toFixed(1);
+
                     tr.innerHTML = `
                         <td class="py-2.5 px-4 font-medium text-slate-500">${formatDate(tx.date)}</td>
-                        <td class="py-2.5 px-4 font-bold text-emerald-600">${formatCurrency(tx.amount)}</td>
+                        <td class="py-2.5 px-4 font-bold text-emerald-600">
+                            <div class="flex items-center gap-2">
+                                <span>${formatCurrency(tx.amount)}</span>
+                                <span class="bg-indigo-50 text-indigo-600 text-[10px] font-bold px-1.5 py-0.5 rounded-full border border-indigo-100 shadow-sm whitespace-nowrap" title="Representa el ${txPct}% de la meta total">
+                                    ${txPct}%
+                                </span>
+                            </div>
+                        </td>
                         <td class="py-2.5 px-4 text-slate-500 italic">${escapeHtml(tx.note)}</td>
                     `;
                     tbody.appendChild(tr);
@@ -664,13 +677,14 @@
             detailsModal.classList.add('hidden');
         }
 
-        // EXPORT TO JSON Function
+        // EXPORT TO JSON Function - Genera un archivo con nombre similar a la meta de ahorro
         function exportGoal(id) {
             const goal = goalsList.find(g => g.id === id);
             if (!goal) return;
 
-            // Generate clean name
+            // Generate clean name from the saving goal
             const cleanName = cleanFilename(goal.name);
+            // El nombre del archivo exportado tiene similitud directa con la meta de ahorro
             const filename = `meta_${cleanName}.json`;
 
             // Create JSON string
