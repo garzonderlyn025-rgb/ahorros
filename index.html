@@ -1,0 +1,741 @@
+<!DOCTYPE html>
+<html lang="es" class="h-full bg-slate-50">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AhorraFácil - Gestor de Metas de Ahorro</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+    </style>
+</head>
+<body class="h-full flex flex-col text-slate-800">
+
+    <!-- Header / Navbar -->
+    <header class="bg-gradient-to-r from-emerald-600 to-teal-700 text-white shadow-md">
+        <div class="max-w-6xl mx-auto px-4 py-5 flex flex-col sm:flex-row justify-between items-center gap-4">
+            <div class="flex items-center gap-3">
+                <div class="p-2.5 bg-white/10 rounded-xl">
+                    <svg class="w-8 h-8 text-emerald-200" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                </div>
+                <div>
+                    <h1 class="text-2xl font-bold tracking-tight">AhorraFácil</h1>
+                    <p class="text-xs text-emerald-100 font-medium">Registra tus metas de ahorro y monitorea tu progreso</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-3">
+                <!-- Import JSON button -->
+                <label for="import-json-file" class="cursor-pointer bg-white/10 hover:bg-white/20 transition-all text-sm font-semibold py-2 px-4 rounded-xl flex items-center gap-2 border border-white/20">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path>
+                    </svg>
+                    Importar Meta (.json)
+                </label>
+                <input type="file" id="import-json-file" class="hidden" accept=".json" onchange="importGoal(event)">
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Container -->
+    <main class="flex-grow max-w-6xl w-full mx-auto px-4 py-8">
+
+        <!-- Welcome banner or summary -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <!-- Summary card 1: Total Saved -->
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex items-center justify-between">
+                <div>
+                    <span class="text-sm font-medium text-slate-400">Total Ahorrado Acumulado</span>
+                    <h3 class="text-3xl font-bold text-slate-800 mt-1" id="global-total-saved">$0.00</h3>
+                </div>
+                <div class="p-3 bg-emerald-50 rounded-xl text-emerald-600">
+                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5a2 2 0 10-2 2h2zm0 0h4m-4 0H8m12 9a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                </div>
+            </div>
+
+            <!-- Summary card 2: Active Goals -->
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex items-center justify-between">
+                <div>
+                    <span class="text-sm font-medium text-slate-400">Metas de Ahorro Activas</span>
+                    <h3 class="text-3xl font-bold text-slate-800 mt-1" id="global-active-goals">0</h3>
+                </div>
+                <div class="p-3 bg-blue-50 rounded-xl text-blue-600">
+                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path>
+                    </svg>
+                </div>
+            </div>
+
+            <!-- Summary card 3: Goals Completed -->
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex items-center justify-between">
+                <div>
+                    <span class="text-sm font-medium text-slate-400">Metas Completadas</span>
+                    <h3 class="text-3xl font-bold text-slate-800 mt-1" id="global-completed-goals">0</h3>
+                </div>
+                <div class="p-3 bg-amber-50 rounded-xl text-amber-600">
+                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"></path>
+                    </svg>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+
+            <!-- Left Panel: Create a Goal & Actions -->
+            <div class="space-y-6 lg:col-span-1">
+                <!-- Create/Update Goal Form Card -->
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+                    <h2 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
+                        <svg class="w-5 h-5 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        Crear Nueva Meta
+                    </h2>
+
+                    <form id="goal-form" onsubmit="handleCreateGoal(event)" class="space-y-4">
+                        <div>
+                            <label for="goal-name" class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Nombre de la Meta</label>
+                            <input type="text" id="goal-name" required placeholder="Ej: Viaje a Japón, Comprar Auto"
+                                class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all">
+                        </div>
+
+                        <div>
+                            <label for="goal-target" class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Monto Objetivo ($)</label>
+                            <input type="number" id="goal-target" required min="1" step="any" placeholder="Monto total que necesitas"
+                                class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all">
+                        </div>
+
+                        <div>
+                            <label for="goal-initial" class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Ahorro Inicial (Opcional, $)</label>
+                            <input type="number" id="goal-initial" min="0" step="any" placeholder="¿Cuánto tienes guardado ya?" value="0"
+                                class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all">
+                        </div>
+
+                        <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white font-semibold py-3 px-4 rounded-xl text-sm transition-all shadow-sm flex items-center justify-center gap-2 mt-2">
+                            Crear Meta de Ahorro
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Info/Stack Explanation Card -->
+                <div class="bg-gradient-to-br from-slate-800 to-slate-900 text-slate-200 p-6 rounded-2xl shadow-md space-y-3">
+                    <h3 class="font-bold text-white flex items-center gap-2 text-base">
+                        <svg class="w-5 h-5 text-emerald-400" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
+                        </svg>
+                        Pila Tecnológica (Stack)
+                    </h3>
+                    <p class="text-xs text-slate-300 leading-relaxed">
+                        Este aplicativo está construido con un stack ágil y ligero ideal para proyectos de uso personal o local:
+                    </p>
+                    <ul class="text-xs space-y-2 list-disc pl-4 text-slate-300">
+                        <li><strong class="text-white">Frontend:</strong> HTML5 semántico, Tailwind CSS (diseño responsivo y estilizado) y ES6+ JavaScript.</li>
+                        <li><strong class="text-white">Persistencia:</strong> <code class="bg-white/10 px-1 py-0.5 rounded text-emerald-300">Web Storage (localStorage)</code> del navegador. Sin bases de datos ni servidores requeridos.</li>
+                        <li><strong class="text-white">Intercambio de Datos:</strong> Importación y exportación de archivos <code class="bg-white/10 px-1 py-0.5 rounded text-emerald-300">JSON</code> locales con nombres dinámicos autogenerados de forma amigable (ej: <code class="text-emerald-300">meta_viaje_japon.json</code>).</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Right Panel: Active Saving Goals List & Transaction logs -->
+            <div class="lg:col-span-2 space-y-6">
+                <!-- Section Header -->
+                <div class="flex items-center justify-between">
+                    <h2 class="text-xl font-bold text-slate-800 flex items-center gap-2">
+                        <svg class="w-5 h-5 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+                        </svg>
+                        Mis Metas de Ahorro
+                    </h2>
+                    <span class="text-xs font-semibold bg-slate-200 text-slate-600 px-2.5 py-1 rounded-full shadow-sm" id="goals-count-badge">0 metas</span>
+                </div>
+
+                <!-- Goals Grid/Container -->
+                <div id="goals-container" class="space-y-6">
+                    <!-- Dynamic cards will be rendered here -->
+                    <!-- Empty state -->
+                    <div id="empty-state" class="bg-white rounded-2xl border-2 border-dashed border-slate-200 p-12 text-center shadow-sm">
+                        <div class="w-16 h-16 bg-slate-50 text-slate-400 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                            </svg>
+                        </div>
+                        <h3 class="text-lg font-bold text-slate-700">No hay metas registradas</h3>
+                        <p class="text-slate-400 text-sm mt-1 max-w-sm mx-auto">Completa el formulario de la izquierda o importa un archivo JSON para comenzar a registrar tus ahorros.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Modal for Adding Savings / Registering Transactions -->
+    <div id="savings-modal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-2xl max-w-md w-full shadow-2xl overflow-hidden border border-slate-100 transform scale-95 transition-transform duration-200 ease-out">
+            <div class="bg-emerald-600 text-white p-6">
+                <h3 class="text-lg font-bold flex items-center gap-2">
+                    <svg class="w-6 h-6 text-emerald-200" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                    </svg>
+                    Añadir Ahorro a la Meta
+                </h3>
+                <p id="modal-goal-title" class="text-xs text-emerald-100 mt-1 font-semibold truncate uppercase tracking-wider">META: ...</p>
+            </div>
+
+            <form id="savings-form" onsubmit="handleSaveAmount(event)" class="p-6 space-y-4">
+                <input type="hidden" id="modal-goal-id">
+
+                <div>
+                    <label for="savings-amount" class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Monto a Ahorrar ($)</label>
+                    <input type="number" id="savings-amount" required min="0.01" step="any" placeholder="¿Cuánto dinero vas a depositar?"
+                        class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all">
+                </div>
+
+                <div>
+                    <label for="savings-note" class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Nota / Concepto (Opcional)</label>
+                    <input type="text" id="savings-note" placeholder="Ej: Depósito semanal, Regalo de cumpleaños"
+                        class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all">
+                </div>
+
+                <div class="flex items-center gap-3 pt-2">
+                    <button type="button" onclick="closeSavingsModal()" class="w-1/2 bg-slate-100 hover:bg-slate-200 text-slate-600 font-semibold py-2.5 px-4 rounded-xl text-sm transition-all">
+                        Cancelar
+                    </button>
+                    <button type="submit" class="w-1/2 bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white font-semibold py-2.5 px-4 rounded-xl text-sm transition-all shadow-sm">
+                        Registrar Ahorro
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal for Showing Goal Details & Transactions -->
+    <div id="details-modal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-2xl max-w-lg w-full shadow-2xl overflow-hidden border border-slate-100 flex flex-col max-h-[85vh]">
+            <div class="bg-indigo-600 text-white p-6 flex-shrink-0">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <h3 id="details-goal-title" class="text-xl font-bold">Detalles de la Meta</h3>
+                        <p id="details-goal-status" class="text-xs text-indigo-100 mt-1 font-semibold uppercase tracking-wider">Progreso</p>
+                    </div>
+                    <button onclick="closeDetailsModal()" class="p-1.5 hover:bg-white/10 rounded-lg transition-all">
+                        <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <div class="p-6 overflow-y-auto space-y-6 flex-grow">
+                <!-- Progress bar and summary details -->
+                <div class="bg-slate-50 p-4 rounded-xl border border-slate-100 space-y-3">
+                    <div class="grid grid-cols-2 gap-4 text-center">
+                        <div>
+                            <span class="text-xs font-semibold text-slate-400 uppercase">Monto Guardado</span>
+                            <p id="details-saved-amount" class="text-lg font-bold text-slate-800">$0.00</p>
+                        </div>
+                        <div>
+                            <span class="text-xs font-semibold text-slate-400 uppercase">Monto Meta</span>
+                            <p id="details-target-amount" class="text-lg font-bold text-slate-800">$0.00</p>
+                        </div>
+                    </div>
+                    <!-- Big progress bar -->
+                    <div>
+                        <div class="flex justify-between items-center text-xs text-slate-500 font-medium mb-1">
+                            <span>Progreso General</span>
+                            <span id="details-percentage-text">0%</span>
+                        </div>
+                        <div class="w-full bg-slate-200 h-3.5 rounded-full overflow-hidden">
+                            <div id="details-progressbar" class="bg-gradient-to-r from-emerald-500 to-teal-500 h-full rounded-full transition-all duration-500" style="width: 0%"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Transactions History -->
+                <div>
+                    <h4 class="text-sm font-bold text-slate-700 mb-3 flex items-center justify-between">
+                        <span>Historial de Depósitos</span>
+                        <span id="details-deposits-count" class="text-xs font-semibold bg-slate-100 text-slate-500 px-2 py-0.5 rounded-md">0 depósitos</span>
+                    </h4>
+                    <div class="border border-slate-100 rounded-xl overflow-hidden max-h-56 overflow-y-auto">
+                        <table class="w-full text-left text-xs text-slate-600 border-collapse">
+                            <thead>
+                                <tr class="bg-slate-50 border-b border-slate-100 text-slate-400 uppercase font-semibold">
+                                    <th class="py-2.5 px-4">Fecha</th>
+                                    <th class="py-2.5 px-4">Monto</th>
+                                    <th class="py-2.5 px-4">Nota</th>
+                                </tr>
+                            </thead>
+                            <tbody id="details-transactions-body" class="divide-y divide-slate-100">
+                                <!-- Dynamic rows -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="p-4 bg-slate-50 border-t border-slate-100 flex items-center justify-end gap-2 flex-shrink-0">
+                <button onclick="closeDetailsModal()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-semibold py-2 px-4 rounded-xl text-xs transition-all">
+                    Cerrar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-slate-100 border-t border-slate-200 py-6 mt-12 text-center text-xs text-slate-400">
+        <div class="max-w-6xl mx-auto px-4">
+            <p>© <span id="current-year"></span> AhorraFácil App. Diseñado para control y monitoreo personal de finanzas.</p>
+        </div>
+    </footer>
+
+    <!-- App JavaScript Logic -->
+    <script>
+        // DOM Elements
+        const goalForm = document.getElementById('goal-form');
+        const emptyState = document.getElementById('empty-state');
+        const goalsContainer = document.getElementById('goals-container');
+        const goalsCountBadge = document.getElementById('goals-count-badge');
+
+        // Global summaries
+        const globalTotalSaved = document.getElementById('global-total-saved');
+        const globalActiveGoals = document.getElementById('global-active-goals');
+        const globalCompletedGoals = document.getElementById('global-completed-goals');
+
+        // Modals
+        const savingsModal = document.getElementById('savings-modal');
+        const savingsForm = document.getElementById('savings-form');
+        const detailsModal = document.getElementById('details-modal');
+
+        // App State
+        let goalsList = [];
+
+        // Setup Application on Load
+        window.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('current-year').textContent = new Date().getFullYear();
+            loadFromLocalStorage();
+            renderGoals();
+        });
+
+        // Load data from LocalStorage
+        function loadFromLocalStorage() {
+            try {
+                const data = localStorage.getItem('ahorrafacil_goals');
+                if (data) {
+                    goalsList = JSON.parse(data);
+                } else {
+                    goalsList = [];
+                }
+            } catch (e) {
+                console.error("Error al cargar localStorage", e);
+                goalsList = [];
+            }
+        }
+
+        // Save data to LocalStorage
+        function saveToLocalStorage() {
+            try {
+                localStorage.setItem('ahorrafacil_goals', JSON.stringify(goalsList));
+            } catch (e) {
+                console.error("Error al guardar en localStorage", e);
+            }
+        }
+
+        // Clean name to be safe for filenames
+        function cleanFilename(text) {
+            return text
+                .toLowerCase()
+                .normalize("NFD")
+                .replace(/[\u0300-\u036f]/g, "") // Remove accents
+                .replace(/[^a-z0-9_]/g, "_")    // Keep only alphanumeric and underscore, replace rest with _
+                .replace(/__+/g, "_")            // Deduplicate underscores
+                .replace(/^_+|_+$/g, "");        // Trim underscores
+        }
+
+        // Format Currency
+        function formatCurrency(val) {
+            return new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', minimumFractionDigits: 0 }).format(val);
+        }
+
+        // Format Date
+        function formatDate(dateStr) {
+            const date = new Date(dateStr);
+            return date.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+        }
+
+        // Calculate and Update global stats
+        function updateGlobalStats() {
+            let totalSaved = 0;
+            let activeCount = goalsList.length;
+            let completedCount = 0;
+
+            goalsList.forEach(g => {
+                totalSaved += Number(g.currentAmount);
+                if (Number(g.currentAmount) >= Number(g.targetAmount)) {
+                    completedCount++;
+                }
+            });
+
+            globalTotalSaved.textContent = formatCurrency(totalSaved);
+            globalActiveGoals.textContent = activeCount;
+            globalCompletedGoals.textContent = completedCount;
+            goalsCountBadge.textContent = `${activeCount} ${activeCount === 1 ? 'meta' : 'metas'}`;
+        }
+
+        // Create new goal from form submit
+        function handleCreateGoal(e) {
+            e.preventDefault();
+            const name = document.getElementById('goal-name').value.trim();
+            const target = Number(document.getElementById('goal-target').value);
+            const initial = Number(document.getElementById('goal-initial').value) || 0;
+
+            if (!name || target <= 0) {
+                alert('Por favor, ingresa datos válidos.');
+                return;
+            }
+
+            const transactions = [];
+            if (initial > 0) {
+                transactions.push({
+                    id: 'tx_' + Date.now(),
+                    amount: initial,
+                    date: new Date().toISOString(),
+                    note: 'Ahorro Inicial'
+                });
+            }
+
+            const newGoal = {
+                id: 'goal_' + Date.now() + Math.random().toString(36).substring(2, 5),
+                name: name,
+                targetAmount: target,
+                currentAmount: initial,
+                transactions: transactions,
+                createdAt: new Date().toISOString()
+            };
+
+            goalsList.push(newGoal);
+            saveToLocalStorage();
+            renderGoals();
+
+            // Reset form
+            goalForm.reset();
+            document.getElementById('goal-initial').value = '0';
+        }
+
+        // Render goals in dashboard
+        function renderGoals() {
+            updateGlobalStats();
+
+            // Clear previous render
+            const cards = goalsContainer.querySelectorAll('.goal-card');
+            cards.forEach(c => c.remove());
+
+            if (goalsList.length === 0) {
+                emptyState.style.display = 'block';
+                return;
+            }
+
+            emptyState.style.display = 'none';
+
+            goalsList.forEach(goal => {
+                const target = Number(goal.targetAmount);
+                const current = Number(goal.currentAmount);
+                const pct = Math.min(100, Math.round((current / target) * 100)) || 0;
+                const isCompleted = current >= target;
+
+                const goalCard = document.createElement('div');
+                goalCard.className = `goal-card bg-white rounded-2xl shadow-sm border p-6 transition-all hover:shadow-md ${isCompleted ? 'border-emerald-200 bg-emerald-50/10' : 'border-slate-100'}`;
+                goalCard.id = goal.id;
+
+                goalCard.innerHTML = `
+                    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
+                        <div class="space-y-1">
+                            <div class="flex items-center gap-2">
+                                <h3 class="text-lg font-bold text-slate-800">${escapeHtml(goal.name)}</h3>
+                                ${isCompleted ? `
+                                    <span class="bg-emerald-100 text-emerald-800 text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1">
+                                        <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                                        </svg>
+                                        ¡Completada!
+                                    </span>
+                                ` : ''}
+                            </div>
+                            <p class="text-xs text-slate-400">Creada el ${formatDate(goal.createdAt)}</p>
+                        </div>
+                        <div class="flex flex-wrap items-center gap-2">
+                            <!-- Show detail button -->
+                            <button onclick="openDetailsModal('${goal.id}')" title="Ver Historial" class="p-2 text-slate-500 hover:bg-slate-100 rounded-xl transition-all border border-slate-100 hover:text-indigo-600 bg-white">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path>
+                                </svg>
+                            </button>
+                            <!-- Export button -->
+                            <button onclick="exportGoal('${goal.id}')" title="Exportar meta a JSON" class="p-2 text-slate-500 hover:bg-slate-100 rounded-xl transition-all border border-slate-100 hover:text-emerald-600 bg-white">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                                </svg>
+                            </button>
+                            <!-- Delete button -->
+                            <button onclick="deleteGoal('${goal.id}')" title="Eliminar" class="p-2 text-slate-500 hover:bg-red-50 hover:text-red-600 rounded-xl transition-all border border-slate-100 bg-white">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Money progress & percentage -->
+                    <div class="grid grid-cols-2 gap-4 text-xs font-semibold uppercase tracking-wider text-slate-500 mb-2">
+                        <div>
+                            <span>Ahorrado:</span>
+                            <span class="block text-base font-bold text-slate-800">${formatCurrency(current)}</span>
+                        </div>
+                        <div class="text-right">
+                            <span>Objetivo:</span>
+                            <span class="block text-base font-bold text-slate-800">${formatCurrency(target)}</span>
+                        </div>
+                    </div>
+
+                    <!-- Progress Bar wrapper -->
+                    <div class="relative w-full bg-slate-100 h-3.5 rounded-full overflow-hidden mb-5">
+                        <div class="bg-gradient-to-r from-emerald-500 to-teal-500 h-full rounded-full transition-all duration-500" style="width: ${pct}%"></div>
+                    </div>
+
+                    <div class="flex items-center justify-between gap-4">
+                        <span class="text-sm font-bold text-slate-600">${pct}% Completado</span>
+
+                        <!-- Quick deposit or success label -->
+                        ${isCompleted ? `
+                            <span class="text-sm font-bold text-emerald-600 flex items-center gap-1.5 bg-emerald-50 py-1.5 px-3 rounded-xl border border-emerald-100">
+                                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                                    <path fill-rule="evenodd" d="M6.267 3.585a.75.75 0 00-.012 1.06L9.5 8 6.255 11.354a.75.75 0 101.09 1.03l3.75-3.875a.75.75 0 000-1.038l-3.75-3.875a.75.75 0 00-1.06-.012z" clip-rule="evenodd"></path>
+                                </svg>
+                                Meta Alcanzada
+                            </span>
+                        ` : `
+                            <button onclick="openSavingsModal('${goal.id}', '${escapeHtml(goal.name)}')" class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2 px-4 rounded-xl text-xs transition-all shadow-sm flex items-center gap-1.5">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                                </svg>
+                                Ahorrar Dinero
+                            </button>
+                        `}
+                    </div>
+                `;
+
+                goalsContainer.appendChild(goalCard);
+            });
+        }
+
+        // Escape HTML to prevent XSS issues in user input
+        function escapeHtml(str) {
+            return str
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+
+        // Delete a goal
+        function deleteGoal(id) {
+            const goal = goalsList.find(g => g.id === id);
+            if (!goal) return;
+
+            if (confirm(`¿Estás seguro de que quieres eliminar la meta "${goal.name}"? Se perderá todo el historial.`)) {
+                goalsList = goalsList.filter(g => g.id !== id);
+                saveToLocalStorage();
+                renderGoals();
+            }
+        }
+
+        // Open savings modal
+        function openSavingsModal(id, name) {
+            document.getElementById('modal-goal-id').value = id;
+            document.getElementById('modal-goal-title').textContent = `META: ${name}`;
+            savingsForm.reset();
+            savingsModal.classList.remove('hidden');
+        }
+
+        // Close savings modal
+        function closeSavingsModal() {
+            savingsModal.classList.add('hidden');
+        }
+
+        // Handle adding savings to goal
+        function handleSaveAmount(e) {
+            e.preventDefault();
+            const id = document.getElementById('modal-goal-id').value;
+            const amount = Number(document.getElementById('savings-amount').value);
+            const note = document.getElementById('savings-note').value.trim() || 'Depósito';
+
+            if (amount <= 0) {
+                alert('Monto inválido.');
+                return;
+            }
+
+            const goalIndex = goalsList.findIndex(g => g.id === id);
+            if (goalIndex === -1) return;
+
+            const goal = goalsList[goalIndex];
+            const newTx = {
+                id: 'tx_' + Date.now(),
+                amount: amount,
+                date: new Date().toISOString(),
+                note: note
+            };
+
+            goal.transactions.push(newTx);
+            goal.currentAmount = Number(goal.currentAmount) + amount;
+
+            // Save and render
+            saveToLocalStorage();
+            renderGoals();
+            closeSavingsModal();
+
+            // Notify if goal was reached
+            if (Number(goal.currentAmount) >= Number(goal.targetAmount)) {
+                setTimeout(() => {
+                    alert(`¡Felicidades! Has completado tu meta "${goal.name}". 🎉`);
+                }, 400);
+            }
+        }
+
+        // Open details and transaction modal
+        function openDetailsModal(id) {
+            const goal = goalsList.find(g => g.id === id);
+            if (!goal) return;
+
+            document.getElementById('details-goal-title').textContent = goal.name;
+            document.getElementById('details-goal-status').textContent = `Meta: ${formatCurrency(goal.targetAmount)}`;
+            document.getElementById('details-saved-amount').textContent = formatCurrency(goal.currentAmount);
+            document.getElementById('details-target-amount').textContent = formatCurrency(goal.targetAmount);
+
+            // Calculate percentage
+            const target = Number(goal.targetAmount);
+            const current = Number(goal.currentAmount);
+            const pct = Math.min(100, Math.round((current / target) * 100)) || 0;
+
+            document.getElementById('details-percentage-text').textContent = `${pct}%`;
+            document.getElementById('details-progressbar').style.width = `${pct}%`;
+
+            // Populate transaction body
+            const tbody = document.getElementById('details-transactions-body');
+            tbody.innerHTML = '';
+
+            document.getElementById('details-deposits-count').textContent = `${goal.transactions.length} ${goal.transactions.length === 1 ? 'depósito' : 'depósitos'}`;
+
+            if (goal.transactions.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="3" class="py-4 text-center text-slate-400 font-medium">No se han registrado depósitos aún.</td>
+                    </tr>
+                `;
+            } else {
+                // Sort by date descending
+                const sortedTxs = [...goal.transactions].sort((a,b) => new Date(b.date) - new Date(a.date));
+                sortedTxs.forEach(tx => {
+                    const tr = document.createElement('tr');
+                    tr.className = 'hover:bg-slate-50 transition-all';
+                    tr.innerHTML = `
+                        <td class="py-2.5 px-4 font-medium text-slate-500">${formatDate(tx.date)}</td>
+                        <td class="py-2.5 px-4 font-bold text-emerald-600">${formatCurrency(tx.amount)}</td>
+                        <td class="py-2.5 px-4 text-slate-500 italic">${escapeHtml(tx.note)}</td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            }
+
+            detailsModal.classList.remove('hidden');
+        }
+
+        // Close details modal
+        function closeDetailsModal() {
+            detailsModal.classList.add('hidden');
+        }
+
+        // EXPORT TO JSON Function
+        function exportGoal(id) {
+            const goal = goalsList.find(g => g.id === id);
+            if (!goal) return;
+
+            // Generate clean name
+            const cleanName = cleanFilename(goal.name);
+            const filename = `meta_${cleanName}.json`;
+
+            // Create JSON string
+            const jsonString = JSON.stringify(goal, null, 2);
+
+            // Create Blob and trigger download
+            const blob = new Blob([jsonString], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = filename;
+
+            document.body.appendChild(link);
+            link.click();
+
+            // Clean up
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+        }
+
+        // IMPORT FROM JSON Function
+        function importGoal(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const importedGoal = JSON.parse(e.target.result);
+
+                    // Basic validation
+                    if (!importedGoal.name || typeof importedGoal.targetAmount !== 'number' || typeof importedGoal.currentAmount !== 'number' || !Array.isArray(importedGoal.transactions)) {
+                        alert('El archivo JSON no tiene un formato de meta válido.');
+                        return;
+                    }
+
+                    // Check duplicate ID
+                    const existingIndex = goalsList.findIndex(g => g.id === importedGoal.id);
+                    if (existingIndex !== -1) {
+                        if (confirm(`La meta "${importedGoal.name}" ya existe. ¿Deseas sobreescribirla?`)) {
+                            goalsList[existingIndex] = importedGoal;
+                        } else {
+                            // Assign new ID to import as separate
+                            importedGoal.id = 'goal_' + Date.now() + Math.random().toString(36).substring(2, 5);
+                            importedGoal.name = `${importedGoal.name} (Importado)`;
+                            goalsList.push(importedGoal);
+                        }
+                    } else {
+                        goalsList.push(importedGoal);
+                    }
+
+                    saveToLocalStorage();
+                    renderGoals();
+                    alert('¡Meta importada exitosamente!');
+                } catch (error) {
+                    alert('Error al leer el archivo JSON. Asegúrate de que es un archivo válido de meta.');
+                    console.error(error);
+                } finally {
+                    // Reset input
+                    event.target.value = '';
+                }
+            };
+            reader.readAsText(file);
+        }
+    </script>
+</body>
+</html>
