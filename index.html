@@ -446,7 +446,16 @@
 
             emptyState.style.display = 'none';
 
-            goalsList.forEach(goal => {
+            // Sort goals: uncompleted/active first, then completed/reached.
+            const sortedGoals = [...goalsList].sort((a, b) => {
+                const aCompleted = Number(a.currentAmount) >= Number(a.targetAmount);
+                const bCompleted = Number(b.currentAmount) >= Number(b.targetAmount);
+                if (aCompleted && !bCompleted) return 1;
+                if (!aCompleted && bCompleted) return -1;
+                return 0;
+            });
+
+            sortedGoals.forEach(goal => {
                 const target = Number(goal.targetAmount);
                 const current = Number(goal.currentAmount);
                 const pct = Math.min(100, Math.round((current / target) * 100)) || 0;
