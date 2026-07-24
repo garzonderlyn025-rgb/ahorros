@@ -32,7 +32,14 @@
                     <p class="text-xs text-emerald-100 font-medium">Registra tus metas de ahorro y monitorea tu progreso</p>
                 </div>
             </div>
-            <div class="flex items-center gap-3">
+            <div class="flex flex-wrap items-center gap-3">
+                <!-- Export and Clear All button -->
+                <button onclick="exportAndClearAll()" id="btn-export-clear" class="bg-amber-500/20 hover:bg-amber-500/30 text-amber-100 transition-all text-sm font-semibold py-2 px-4 rounded-xl flex items-center gap-2 border border-amber-500/35">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                    </svg>
+                    Limpiar y Exportar Todo
+                </button>
                 <!-- Import JSON button -->
                 <label for="import-json-file" class="cursor-pointer bg-white/10 hover:bg-white/20 transition-all text-sm font-semibold py-2 px-4 rounded-xl flex items-center gap-2 border border-white/20">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -128,23 +135,6 @@
                     </form>
                 </div>
 
-                <!-- Info/Stack Explanation Card -->
-                <div class="bg-gradient-to-br from-slate-800 to-slate-900 text-slate-200 p-6 rounded-2xl shadow-md space-y-3">
-                    <h3 class="font-bold text-white flex items-center gap-2 text-base">
-                        <svg class="w-5 h-5 text-emerald-400" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
-                        </svg>
-                        Pila Tecnológica (Stack)
-                    </h3>
-                    <p class="text-xs text-slate-300 leading-relaxed">
-                        Este aplicativo está construido con un stack ágil y ligero ideal para proyectos de uso personal o local:
-                    </p>
-                    <ul class="text-xs space-y-2 list-disc pl-4 text-slate-300">
-                        <li><strong class="text-white">Frontend:</strong> HTML5 semántico, Tailwind CSS (diseño responsivo y estilizado) y ES6+ JavaScript.</li>
-                        <li><strong class="text-white">Persistencia:</strong> <code class="bg-white/10 px-1 py-0.5 rounded text-emerald-300">Web Storage (localStorage)</code> del navegador. Sin bases de datos ni servidores requeridos.</li>
-                        <li><strong class="text-white">Intercambio de Datos:</strong> Importación y exportación de archivos <code class="bg-white/10 px-1 py-0.5 rounded text-emerald-300">JSON</code> locales con nombres dinámicos autogenerados de forma amigable (ej: <code class="text-emerald-300">meta_viaje_japon.json</code>).</li>
-                    </ul>
-                </div>
             </div>
 
             <!-- Right Panel: Active Saving Goals List & Transaction logs -->
@@ -699,6 +689,48 @@
             // Clean up
             document.body.removeChild(link);
             URL.revokeObjectURL(url);
+        }
+
+        // EXPORT AND CLEAR ALL Function
+        function exportAndClearAll() {
+            if (goalsList.length === 0) {
+                alert('No hay metas para exportar.');
+                return;
+            }
+
+            const nameInput = prompt('Ingresa el nombre para el archivo de respaldo (backup):', 'ahorrafacil_backup');
+            if (nameInput === null) {
+                // User canceled
+                return;
+            }
+
+            const cleanName = cleanFilename(nameInput.trim()) || 'backup';
+            const filename = `${cleanName}.json`;
+
+            // Create JSON string of all goals
+            const jsonString = JSON.stringify(goalsList, null, 2);
+
+            // Create Blob and trigger download
+            const blob = new Blob([jsonString], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = filename;
+
+            document.body.appendChild(link);
+            link.click();
+
+            // Clean up
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+
+            // Clear all goals from device
+            goalsList = [];
+            saveToLocalStorage();
+            renderGoals();
+
+            alert('¡Todas las metas han sido exportadas y eliminadas!');
         }
 
         // IMPORT FROM JSON Function
