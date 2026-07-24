@@ -32,7 +32,14 @@
                     <p class="text-xs text-emerald-100 font-medium">Registra tus metas de ahorro y monitorea tu progreso</p>
                 </div>
             </div>
-            <div class="flex items-center gap-3">
+            <div class="flex flex-wrap items-center gap-3">
+                <!-- Export JSON button -->
+                <button onclick="exportAllGoals()" class="bg-white/10 hover:bg-white/20 transition-all text-sm font-semibold py-2 px-4 rounded-xl flex items-center gap-2 border border-white/20">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                    </svg>
+                    Exportar Todo (.json)
+                </button>
                 <!-- Import JSON button -->
                 <label for="import-json-file" class="cursor-pointer bg-white/10 hover:bg-white/20 transition-all text-sm font-semibold py-2 px-4 rounded-xl flex items-center gap-2 border border-white/20">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -41,6 +48,13 @@
                     Importar Meta (.json)
                 </label>
                 <input type="file" id="import-json-file" class="hidden" accept=".json" onchange="importGoal(event)">
+                <!-- Clean/Clear Button with auto-export -->
+                <button onclick="clearAllData()" class="bg-rose-500/20 hover:bg-rose-600 border border-rose-500/30 text-rose-100 hover:text-white transition-all text-sm font-semibold py-2 px-4 rounded-xl flex items-center gap-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                    </svg>
+                    Limpiar Todo
+                </button>
             </div>
         </div>
     </header>
@@ -128,23 +142,6 @@
                     </form>
                 </div>
 
-                <!-- Info/Stack Explanation Card -->
-                <div class="bg-gradient-to-br from-slate-800 to-slate-900 text-slate-200 p-6 rounded-2xl shadow-md space-y-3">
-                    <h3 class="font-bold text-white flex items-center gap-2 text-base">
-                        <svg class="w-5 h-5 text-emerald-400" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
-                        </svg>
-                        Pila Tecnológica (Stack)
-                    </h3>
-                    <p class="text-xs text-slate-300 leading-relaxed">
-                        Este aplicativo está construido con un stack ágil y ligero ideal para proyectos de uso personal o local:
-                    </p>
-                    <ul class="text-xs space-y-2 list-disc pl-4 text-slate-300">
-                        <li><strong class="text-white">Frontend:</strong> HTML5 semántico, Tailwind CSS (diseño responsivo y estilizado) y ES6+ JavaScript.</li>
-                        <li><strong class="text-white">Persistencia:</strong> <code class="bg-white/10 px-1 py-0.5 rounded text-emerald-300">Web Storage (localStorage)</code> del navegador. Sin bases de datos ni servidores requeridos.</li>
-                        <li><strong class="text-white">Intercambio de Datos:</strong> Importación y exportación de archivos <code class="bg-white/10 px-1 py-0.5 rounded text-emerald-300">JSON</code> locales con nombres dinámicos autogenerados de forma amigable (ej: <code class="text-emerald-300">meta_viaje_japon.json</code>).</li>
-                    </ul>
-                </div>
             </div>
 
             <!-- Right Panel: Active Saving Goals List & Transaction logs -->
@@ -452,6 +449,23 @@
                 const pct = Math.min(100, Math.round((current / target) * 100)) || 0;
                 const isCompleted = current >= target;
 
+                // Generar el desglose de cada ahorro para mostrar en la tarjeta
+                let txHtml = '';
+                if (goal.transactions && goal.transactions.length > 0) {
+                    txHtml = goal.transactions.map(tx => {
+                        const txPctRaw = (tx.amount / target) * 100;
+                        const txPct = txPctRaw % 1 === 0 ? txPctRaw.toFixed(0) : txPctRaw.toFixed(1);
+                        return `
+                            <span class="inline-flex items-center gap-1.5 bg-slate-50 text-slate-700 text-[11px] font-semibold px-2 py-0.5 rounded-lg border border-slate-100 shadow-xs" title="${escapeHtml(tx.note)}">
+                                <span class="text-emerald-600 font-bold">${formatCurrency(tx.amount)}</span>
+                                <span class="bg-indigo-50 text-indigo-600 text-[9px] font-bold px-1.5 rounded-full border border-indigo-100">${txPct}%</span>
+                            </span>
+                        `;
+                    }).join('');
+                } else {
+                    txHtml = `<span class="text-xs text-slate-400 italic">No hay ahorros registrados aún.</span>`;
+                }
+
                 const goalCard = document.createElement('div');
                 goalCard.className = `goal-card bg-white rounded-2xl shadow-sm border p-6 transition-all hover:shadow-md ${isCompleted ? 'border-emerald-200 bg-emerald-50/10' : 'border-slate-100'}`;
                 goalCard.id = goal.id;
@@ -507,8 +521,16 @@
                     </div>
 
                     <!-- Progress Bar wrapper -->
-                    <div class="relative w-full bg-slate-100 h-3.5 rounded-full overflow-hidden mb-5">
+                    <div class="relative w-full bg-slate-100 h-3.5 rounded-full overflow-hidden mb-4">
                         <div class="bg-gradient-to-r from-emerald-500 to-teal-500 h-full rounded-full transition-all duration-500" style="width: ${pct}%"></div>
+                    </div>
+
+                    <!-- Desglose de cada ahorro en burbujas con su porcentaje -->
+                    <div class="mb-5 pt-3 border-t border-slate-100">
+                        <span class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Desglose de Ahorros:</span>
+                        <div class="flex flex-wrap gap-2 max-h-24 overflow-y-auto">
+                            ${txHtml}
+                        </div>
                     </div>
 
                     <div class="flex items-center justify-between gap-4">
@@ -647,9 +669,22 @@
                 sortedTxs.forEach(tx => {
                     const tr = document.createElement('tr');
                     tr.className = 'hover:bg-slate-50 transition-all';
+
+                    // Calculate percentage relative to the target amount of the goal
+                    const txPctRaw = (tx.amount / target) * 100;
+                    // Format percentage nicely, removing trailing .0 if integer, or showing up to 1 decimal place if floating.
+                    const txPct = txPctRaw % 1 === 0 ? txPctRaw.toFixed(0) : txPctRaw.toFixed(1);
+
                     tr.innerHTML = `
                         <td class="py-2.5 px-4 font-medium text-slate-500">${formatDate(tx.date)}</td>
-                        <td class="py-2.5 px-4 font-bold text-emerald-600">${formatCurrency(tx.amount)}</td>
+                        <td class="py-2.5 px-4 font-bold text-emerald-600">
+                            <div class="flex items-center gap-2">
+                                <span>${formatCurrency(tx.amount)}</span>
+                                <span class="bg-indigo-50 text-indigo-600 text-[10px] font-bold px-1.5 py-0.5 rounded-full border border-indigo-100 shadow-sm whitespace-nowrap" title="Representa el ${txPct}% de la meta total">
+                                    ${txPct}%
+                                </span>
+                            </div>
+                        </td>
                         <td class="py-2.5 px-4 text-slate-500 italic">${escapeHtml(tx.note)}</td>
                     `;
                     tbody.appendChild(tr);
@@ -664,14 +699,98 @@
             detailsModal.classList.add('hidden');
         }
 
-        // EXPORT TO JSON Function
+        // EXPORT ALL GOALS TO JSON Function - Pregunta al usuario por el nombre a menos que sea silencioso
+        function exportAllGoals(isSilent = false) {
+            if (goalsList.length === 0) {
+                alert('No hay metas para exportar.');
+                return;
+            }
+
+            // Generate filename with timestamp
+            const timestamp = new Date().toISOString().replace(/T/, '_').replace(/\..+/, '').replace(/:/g, '-');
+            const defaultFilename = `ahorrafacil_backup_${timestamp}.json`;
+            let filename = defaultFilename;
+
+            if (!isSilent) {
+                // Preguntar al usuario con qué nombre desea exportar el respaldo completo
+                let userFilename = prompt('¿Con qué nombre deseas exportar todas tus metas de ahorro?', defaultFilename);
+                if (userFilename === null) {
+                    // Cancelado por el usuario
+                    return;
+                }
+                userFilename = userFilename.trim();
+                if (!userFilename) {
+                    alert('El nombre del archivo no puede estar vacío. Exportación cancelada.');
+                    return;
+                }
+                filename = userFilename.endsWith('.json') ? userFilename : `${userFilename}.json`;
+            }
+
+            // Create JSON string
+            const jsonString = JSON.stringify(goalsList, null, 2);
+
+            // Create Blob and trigger download
+            const blob = new Blob([jsonString], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = filename;
+
+            document.body.appendChild(link);
+            link.click();
+
+            // Clean up
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+        }
+
+        // LIMPIAR TODO CON EXPORTACIÓN AUTOMÁTICA
+        function clearAllData() {
+            if (goalsList.length === 0) {
+                alert('No hay metas registradas para limpiar.');
+                return;
+            }
+
+            const confirmacion = confirm('¿Estás seguro de que deseas limpiar todos tus datos? Se exportará una copia de seguridad .json de forma automática antes de proceder con el borrado.');
+            if (confirmacion) {
+                // Exportar automáticamente primero en modo silencioso
+                exportAllGoals(true);
+
+                // Limpiar el estado y almacenamiento local
+                goalsList = [];
+                saveToLocalStorage();
+                renderGoals();
+
+                setTimeout(() => {
+                    alert('¡Todos los datos han sido eliminados correctamente! Se ha descargado un respaldo automático en tu carpeta de descargas.');
+                }, 500);
+            }
+        }
+
+        // EXPORT TO JSON Function - Genera un archivo con nombre similar a la meta de ahorro, preguntando al usuario
         function exportGoal(id) {
             const goal = goalsList.find(g => g.id === id);
             if (!goal) return;
 
-            // Generate clean name
+            // Generate clean name from the saving goal name
             const cleanName = cleanFilename(goal.name);
-            const filename = `meta_${cleanName}.json`;
+            const defaultFilename = `meta_${cleanName}.json`;
+
+            // Preguntar al usuario con qué nombre desea exportar el archivo
+            let userFilename = prompt('¿Con qué nombre deseas exportar esta meta de ahorro?', defaultFilename);
+            if (userFilename === null) {
+                // Cancelado por el usuario
+                return;
+            }
+            userFilename = userFilename.trim();
+            if (!userFilename) {
+                alert('El nombre del archivo no puede estar vacío. Exportación cancelada.');
+                return;
+            }
+
+            // Asegurar la extensión .json
+            const filename = userFilename.endsWith('.json') ? userFilename : `${userFilename}.json`;
 
             // Create JSON string
             const jsonString = JSON.stringify(goal, null, 2);
@@ -700,34 +819,70 @@
             const reader = new FileReader();
             reader.onload = function(e) {
                 try {
-                    const importedGoal = JSON.parse(e.target.result);
+                    const importedData = JSON.parse(e.target.result);
 
-                    // Basic validation
-                    if (!importedGoal.name || typeof importedGoal.targetAmount !== 'number' || typeof importedGoal.currentAmount !== 'number' || !Array.isArray(importedGoal.transactions)) {
-                        alert('El archivo JSON no tiene un formato de meta válido.');
-                        return;
-                    }
+                    // Check if the imported data is an array (multiple goals) or a single object
+                    if (Array.isArray(importedData)) {
+                        let importedCount = 0;
+                        importedData.forEach(importedGoal => {
+                            // Validate each goal in the array
+                            if (importedGoal.name && typeof importedGoal.targetAmount === 'number' && typeof importedGoal.currentAmount === 'number' && Array.isArray(importedGoal.transactions)) {
+                                const existingIndex = goalsList.findIndex(g => g.id === importedGoal.id);
+                                if (existingIndex !== -1) {
+                                    if (confirm(`La meta "${importedGoal.name}" ya existe. ¿Deseas sobreescribirla?`)) {
+                                        goalsList[existingIndex] = importedGoal;
+                                        importedCount++;
+                                    } else {
+                                        // Option to import with a new ID
+                                        if (confirm(`¿Deseas importar "${importedGoal.name}" como una meta nueva independiente?`)) {
+                                            importedGoal.id = 'goal_' + Date.now() + Math.random().toString(36).substring(2, 5);
+                                            importedGoal.name = `${importedGoal.name} (Importado)`;
+                                            goalsList.push(importedGoal);
+                                            importedCount++;
+                                        }
+                                    }
+                                } else {
+                                    goalsList.push(importedGoal);
+                                    importedCount++;
+                                }
+                            }
+                        });
 
-                    // Check duplicate ID
-                    const existingIndex = goalsList.findIndex(g => g.id === importedGoal.id);
-                    if (existingIndex !== -1) {
-                        if (confirm(`La meta "${importedGoal.name}" ya existe. ¿Deseas sobreescribirla?`)) {
-                            goalsList[existingIndex] = importedGoal;
+                        if (importedCount > 0) {
+                            saveToLocalStorage();
+                            renderGoals();
+                            alert(`¡Se han importado ${importedCount} metas exitosamente!`);
                         } else {
-                            // Assign new ID to import as separate
-                            importedGoal.id = 'goal_' + Date.now() + Math.random().toString(36).substring(2, 5);
-                            importedGoal.name = `${importedGoal.name} (Importado)`;
-                            goalsList.push(importedGoal);
+                            alert('No se encontraron metas válidas en el archivo.');
                         }
                     } else {
-                        goalsList.push(importedGoal);
-                    }
+                        // Single goal format validation
+                        if (!importedData.name || typeof importedData.targetAmount !== 'number' || typeof importedData.currentAmount !== 'number' || !Array.isArray(importedData.transactions)) {
+                            alert('El archivo JSON no tiene un formato de meta válido.');
+                            return;
+                        }
 
-                    saveToLocalStorage();
-                    renderGoals();
-                    alert('¡Meta importada exitosamente!');
+                        // Check duplicate ID
+                        const existingIndex = goalsList.findIndex(g => g.id === importedData.id);
+                        if (existingIndex !== -1) {
+                            if (confirm(`La meta "${importedData.name}" ya existe. ¿Deseas sobreescribirla?`)) {
+                                goalsList[existingIndex] = importedData;
+                            } else {
+                                // Assign new ID to import as separate
+                                importedData.id = 'goal_' + Date.now() + Math.random().toString(36).substring(2, 5);
+                                importedData.name = `${importedData.name} (Importado)`;
+                                goalsList.push(importedData);
+                            }
+                        } else {
+                            goalsList.push(importedData);
+                        }
+
+                        saveToLocalStorage();
+                        renderGoals();
+                        alert('¡Meta importada exitosamente!');
+                    }
                 } catch (error) {
-                    alert('Error al leer el archivo JSON. Asegúrate de que es un archivo válido de meta.');
+                    alert('Error al leer el archivo JSON. Asegúrate de que es un archivo válido.');
                     console.error(error);
                 } finally {
                     // Reset input
