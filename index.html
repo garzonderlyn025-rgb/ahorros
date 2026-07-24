@@ -674,8 +674,8 @@
             detailsModal.classList.add('hidden');
         }
 
-        // EXPORT ALL GOALS TO JSON Function
-        function exportAllGoals() {
+        // EXPORT ALL GOALS TO JSON Function - Pregunta al usuario por el nombre a menos que sea silencioso
+        function exportAllGoals(isSilent = false) {
             if (goalsList.length === 0) {
                 alert('No hay metas para exportar.');
                 return;
@@ -683,7 +683,23 @@
 
             // Generate filename with timestamp
             const timestamp = new Date().toISOString().replace(/T/, '_').replace(/\..+/, '').replace(/:/g, '-');
-            const filename = `ahorrafacil_backup_${timestamp}.json`;
+            const defaultFilename = `ahorrafacil_backup_${timestamp}.json`;
+            let filename = defaultFilename;
+
+            if (!isSilent) {
+                // Preguntar al usuario con qué nombre desea exportar el respaldo completo
+                let userFilename = prompt('¿Con qué nombre deseas exportar todas tus metas de ahorro?', defaultFilename);
+                if (userFilename === null) {
+                    // Cancelado por el usuario
+                    return;
+                }
+                userFilename = userFilename.trim();
+                if (!userFilename) {
+                    alert('El nombre del archivo no puede estar vacío. Exportación cancelada.');
+                    return;
+                }
+                filename = userFilename.endsWith('.json') ? userFilename : `${userFilename}.json`;
+            }
 
             // Create JSON string
             const jsonString = JSON.stringify(goalsList, null, 2);
@@ -713,8 +729,8 @@
 
             const confirmacion = confirm('¿Estás seguro de que deseas limpiar todos tus datos? Se exportará una copia de seguridad .json de forma automática antes de proceder con el borrado.');
             if (confirmacion) {
-                // Exportar automáticamente primero
-                exportAllGoals();
+                // Exportar automáticamente primero en modo silencioso
+                exportAllGoals(true);
 
                 // Limpiar el estado y almacenamiento local
                 goalsList = [];
@@ -727,15 +743,29 @@
             }
         }
 
-        // EXPORT TO JSON Function - Genera un archivo con nombre similar a la meta de ahorro
+        // EXPORT TO JSON Function - Genera un archivo con nombre similar a la meta de ahorro, preguntando al usuario
         function exportGoal(id) {
             const goal = goalsList.find(g => g.id === id);
             if (!goal) return;
 
             // Generate clean name from the saving goal name
             const cleanName = cleanFilename(goal.name);
-            // El nombre del archivo exportado tiene similitud directa con la meta de ahorro
-            const filename = `meta_${cleanName}.json`;
+            const defaultFilename = `meta_${cleanName}.json`;
+
+            // Preguntar al usuario con qué nombre desea exportar el archivo
+            let userFilename = prompt('¿Con qué nombre deseas exportar esta meta de ahorro?', defaultFilename);
+            if (userFilename === null) {
+                // Cancelado por el usuario
+                return;
+            }
+            userFilename = userFilename.trim();
+            if (!userFilename) {
+                alert('El nombre del archivo no puede estar vacío. Exportación cancelada.');
+                return;
+            }
+
+            // Asegurar la extensión .json
+            const filename = userFilename.endsWith('.json') ? userFilename : `${userFilename}.json`;
 
             // Create JSON string
             const jsonString = JSON.stringify(goal, null, 2);
