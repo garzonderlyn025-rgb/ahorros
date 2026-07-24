@@ -449,6 +449,23 @@
                 const pct = Math.min(100, Math.round((current / target) * 100)) || 0;
                 const isCompleted = current >= target;
 
+                // Generar el desglose de cada ahorro para mostrar en la tarjeta
+                let txHtml = '';
+                if (goal.transactions && goal.transactions.length > 0) {
+                    txHtml = goal.transactions.map(tx => {
+                        const txPctRaw = (tx.amount / target) * 100;
+                        const txPct = txPctRaw % 1 === 0 ? txPctRaw.toFixed(0) : txPctRaw.toFixed(1);
+                        return `
+                            <span class="inline-flex items-center gap-1.5 bg-slate-50 text-slate-700 text-[11px] font-semibold px-2 py-0.5 rounded-lg border border-slate-100 shadow-xs" title="${escapeHtml(tx.note)}">
+                                <span class="text-emerald-600 font-bold">${formatCurrency(tx.amount)}</span>
+                                <span class="bg-indigo-50 text-indigo-600 text-[9px] font-bold px-1.5 rounded-full border border-indigo-100">${txPct}%</span>
+                            </span>
+                        `;
+                    }).join('');
+                } else {
+                    txHtml = `<span class="text-xs text-slate-400 italic">No hay ahorros registrados aún.</span>`;
+                }
+
                 const goalCard = document.createElement('div');
                 goalCard.className = `goal-card bg-white rounded-2xl shadow-sm border p-6 transition-all hover:shadow-md ${isCompleted ? 'border-emerald-200 bg-emerald-50/10' : 'border-slate-100'}`;
                 goalCard.id = goal.id;
@@ -504,8 +521,16 @@
                     </div>
 
                     <!-- Progress Bar wrapper -->
-                    <div class="relative w-full bg-slate-100 h-3.5 rounded-full overflow-hidden mb-5">
+                    <div class="relative w-full bg-slate-100 h-3.5 rounded-full overflow-hidden mb-4">
                         <div class="bg-gradient-to-r from-emerald-500 to-teal-500 h-full rounded-full transition-all duration-500" style="width: ${pct}%"></div>
+                    </div>
+
+                    <!-- Desglose de cada ahorro en burbujas con su porcentaje -->
+                    <div class="mb-5 pt-3 border-t border-slate-100">
+                        <span class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Desglose de Ahorros:</span>
+                        <div class="flex flex-wrap gap-2 max-h-24 overflow-y-auto">
+                            ${txHtml}
+                        </div>
                     </div>
 
                     <div class="flex items-center justify-between gap-4">
